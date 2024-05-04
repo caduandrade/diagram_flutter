@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class Diagram extends StatelessWidget {
@@ -19,9 +20,43 @@ class Diagram extends StatelessWidget {
   }
 
   Widget randomWidget(int i) {
-    return Container(
-        color: Color.fromARGB(255, random.nextInt(255), random.nextInt(255),
-            random.nextInt(255)));
+    Color color = Color.fromARGB(
+        255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
+    return _Child(color: color);
+  }
+}
+
+class _Child extends StatefulWidget {
+  const _Child({required this.color});
+
+  final Color color;
+
+  @override
+  State<StatefulWidget> createState() => _ChildState();
+}
+
+class _ChildState extends State<_Child> {
+  bool over = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+        onEnter: _onEnter,
+        onExit: _onExit,
+        child: Container(
+            color: widget.color, child: over ? const Placeholder() : null));
+  }
+
+  void _onEnter(PointerEnterEvent event) {
+    setState(() {
+      over = true;
+    });
+  }
+
+  void _onExit(PointerExitEvent event) {
+    setState(() {
+      over = false;
+    });
   }
 }
 
