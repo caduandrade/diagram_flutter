@@ -1,6 +1,6 @@
 name: diagram
 description: "Experimental diagram API in Flutter"
-version: 0.0.1
+version: 0.1.0
 repository: https://github.com/caduandrade/diagram_flutter
 
 topics:
