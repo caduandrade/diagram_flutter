@@ -1,4 +1,4 @@
-import 'package:diagram/src/element.dart';
+import 'package:diagram/src/node.dart';
 import 'package:diagram/src/model.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
@@ -6,17 +6,29 @@ import 'package:meta/meta.dart';
 @internal
 class DiagramViewportLayout extends StatelessWidget {
   const DiagramViewportLayout(
-      {super.key, required this.model, required this.offset});
+      {super.key,
+      required this.model,
+      required this.offset,
+      required this.width,
+      required this.height});
 
   final DiagramModel model;
+  final double width;
+  final double height;
   final Offset offset;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
-    for (DiagramElement element in model.elements) {
+    for (DiagramNode node in model.nodes) {
       children.add(LayoutId(
-          key: element.key, id: element.key, child: element.build(context)));
+          key: node.key,
+          id: node.key,
+          child: node.build(
+              context: context,
+              scale: model.scale,
+              viewportWidth: width,
+              viewportHeight: height)));
     }
     return CustomMultiChildLayout(
         delegate: _LayoutDelegate(model: model, offset: offset),
@@ -32,15 +44,16 @@ class _LayoutDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
-    for (DiagramElement element in model.elements) {
+    for (DiagramNode node in model.nodes) {
       layoutChild(
-          element.key,
+          node.key,
           BoxConstraints.tightFor(
-              width: element.bounds.width, height: element.bounds.height));
+              width: node.bounds.width * model.scale,
+              height: node.bounds.height * model.scale));
       positionChild(
-          element.key,
-          Offset(
-              element.bounds.left + offset.dx, element.bounds.top + offset.dy));
+          node.key,
+          Offset((node.bounds.left * model.scale) + offset.dx,
+              (node.bounds.top * model.scale) + offset.dy));
     }
   }
 

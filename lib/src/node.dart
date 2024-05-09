@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract class DiagramElement {
+abstract class DiagramNode {
   final Key key = UniqueKey();
 
   Rect _bounds = Rect.zero;
@@ -22,5 +22,9 @@ abstract class DiagramElement {
     _bounds = Rect.fromLTWH(x, y, width, height);
   }
 
-  Widget build(BuildContext context);
+  Widget build(
+      {required BuildContext context,
+      required double scale,
+      required double viewportWidth,
+      required double viewportHeight});
 }

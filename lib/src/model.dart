@@ -1,70 +1,80 @@
 import 'dart:math' as math;
 
-import 'package:diagram/src/element.dart';
-import 'package:diagram/src/square_element.dart';
+import 'package:diagram/src/node.dart';
+import 'package:diagram/src/square_node.dart';
 import 'package:flutter/material.dart';
 
 class DiagramModel {
-  final Map<Key, DiagramElement> _elements = {};
+  final Map<Key, DiagramNode> _nodes = {};
 
   Rect _bounds = Rect.zero;
 
   Rect get bounds => _bounds;
 
-  Iterable<DiagramElement> get elements => _elements.values;
-
-  int get count => _elements.length;
-
-  DiagramElement? get(Key key) {
-    return _elements[key];
+  double _scale = 1;
+  double get scale => _scale;
+  set scale(double value) {
+    if (_scale != value) {
+      _scale = value;
+      _calculateBounds();
+    }
   }
 
-  void add(DiagramElement element) {
-    _elements[element.key] = element;
+  Iterable<DiagramNode> get nodes => _nodes.values;
+
+  int get count => _nodes.length;
+
+  DiagramNode? get(Key key) {
+    return _nodes[key];
+  }
+
+  void add(DiagramNode node) {
+    _nodes[node.key] = node;
     _calculateBounds();
   }
 
-  void addAll(Iterable<DiagramElement> list) {
-    for (DiagramElement element in list) {
-      _elements[element.key] = element;
+  void addAll(Iterable<DiagramNode> list) {
+    for (DiagramNode node in list) {
+      _nodes[node.key] = node;
     }
     _calculateBounds();
   }
 
   void _calculateBounds() {
-    if (_elements.isEmpty) {
+    if (_nodes.isEmpty) {
       _bounds = Rect.zero;
     } else {
       double left = double.maxFinite;
       double top = double.maxFinite;
       double right = double.minPositive;
       double bottom = double.minPositive;
-      for (DiagramElement element in _elements.values) {
-        left = math.min(left, element.bounds.left);
-        top = math.min(top, element.bounds.top);
-        right = math.max(right, element.bounds.right);
-        bottom = math.max(bottom, element.bounds.bottom);
+      for (DiagramNode node in _nodes.values) {
+        left = math.min(left, node.bounds.left);
+        top = math.min(top, node.bounds.top);
+        right = math.max(right, node.bounds.right);
+        bottom = math.max(bottom, node.bounds.bottom);
       }
-      _bounds = Rect.fromLTRB(left, top, right, bottom);
+      _bounds = Rect.fromLTRB(
+          left * _scale, top * _scale, right * _scale, bottom * _scale);
     }
   }
 }
 
 class DiagramModelFactory {
   static void addSquares(DiagramModel model) {
-    List<DiagramElement> elements = [];
+    List<DiagramNode> nodes = [];
     math.Random random = math.Random();
     for (int i = 0; i < 1000; i++) {
       Color color = Color.fromARGB(
           255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
-      SquareElement element = SquareElement(color: color);
-      element.setBounds(
+      SquareNode node = SquareNode(color: color);
+      node.setBounds(
           x: random.nextInt(450).toDouble(),
           y: random.nextInt(450).toDouble(),
           width: 50,
           height: 50);
-      elements.add(element);
+      nodes.add(node);
     }
-    model.addAll(elements);
+    model.addAll(nodes);
   }
 }

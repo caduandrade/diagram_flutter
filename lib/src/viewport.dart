@@ -36,45 +36,59 @@ class _DiagramViewportState extends State<DiagramViewport> {
 
     return Listener(
         behavior: HitTestBehavior.opaque,
-        onPointerDown: (event) {
-          if (event.buttons == kMiddleMouseButton) {
-            setState(() {
-              _dragging = true;
-            });
-          }
-        },
-        onPointerUp: (e) {
-          if (_dragging) {
-            setState(() {
-              _dragging = false;
-            });
-          }
-        },
-        onPointerCancel: (e) {
-          if (_dragging) {
-            setState(() {
-              _dragging = false;
-            });
-          }
-        },
-        onPointerMove: (event) {
-          if (_dragging && event.buttons == kMiddleMouseButton) {
-            Offset newOffset = _createValidOffset(
-                x: _modelOffset.dx + event.delta.dx,
-                y: _modelOffset.dy + event.delta.dy,
-                viewportWidth: _width,
-                viewportHeight: _height);
-            if (_modelOffset != newOffset) {
-              setState(() {
-                _modelOffset = newOffset;
-              });
-            }
+        onPointerDown: _onDragDown,
+        onPointerUp: (event) => _onDragStop(),
+        onPointerCancel: (event) => _onDragStop(),
+        onPointerMove: _onDragUpdate,
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            _onZoom(event.scrollDelta.dy < 0);
           }
         },
         child: IgnorePointer(
             ignoring: _dragging,
             child: DiagramViewportLayout(
-                model: widget.model, offset: _modelOffset)));
+                model: widget.model,
+                offset: _modelOffset,
+                width: _width,
+                height: _height)));
+  }
+
+  void _onDragDown(PointerDownEvent event) {
+    if (event.buttons == kMiddleMouseButton) {
+      setState(() {
+        _dragging = true;
+      });
+    }
+  }
+
+  void _onDragStop() {
+    if (_dragging) {
+      setState(() {
+        _dragging = false;
+      });
+    }
+  }
+
+  void _onDragUpdate(PointerMoveEvent event) {
+    if (_dragging && event.buttons == kMiddleMouseButton) {
+      Offset newOffset = _createValidOffset(
+          x: _modelOffset.dx + event.delta.dx,
+          y: _modelOffset.dy + event.delta.dy,
+          viewportWidth: _width,
+          viewportHeight: _height);
+      if (_modelOffset != newOffset) {
+        setState(() {
+          _modelOffset = newOffset;
+        });
+      }
+    }
+  }
+
+  void _onZoom(bool zoomIn) {
+    setState(() {
+      widget.model.scale = widget.model.scale * (zoomIn ? 1.05 : 0.95);
+    });
   }
 
   Offset _createValidOffset(

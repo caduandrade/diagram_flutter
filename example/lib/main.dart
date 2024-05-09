@@ -2,11 +2,11 @@ import 'package:diagram/diagram.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const DiagramApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class DiagramApp extends StatelessWidget {
+  const DiagramApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,18 +16,17 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      debugShowCheckedModeBanner: false,
+      home: const DiagramPage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class DiagramPage extends StatelessWidget {
+  const DiagramPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Diagram()
-    );
+    return const Scaffold(body: Diagram());
   }
 }
