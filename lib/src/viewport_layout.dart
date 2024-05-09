@@ -1,5 +1,6 @@
+import 'package:diagram/src/bounds.dart';
 import 'package:diagram/src/node.dart';
-import 'package:diagram/src/model.dart';
+import 'package:diagram/src/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
@@ -7,53 +8,51 @@ import 'package:meta/meta.dart';
 class DiagramViewportLayout extends StatelessWidget {
   const DiagramViewportLayout(
       {super.key,
-      required this.model,
-      required this.offset,
+      required this.controller,
       required this.width,
       required this.height});
 
-  final DiagramModel model;
+  final DiagramController controller;
   final double width;
   final double height;
-  final Offset offset;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
-    for (DiagramNode node in model.nodes) {
+    for (DiagramNode node in controller.nodes) {
       children.add(LayoutId(
           key: node.key,
           id: node.key,
           child: node.build(
               context: context,
-              scale: model.scale,
+              scale: controller.scale,
               viewportWidth: width,
               viewportHeight: height)));
     }
+    // print('nodes: ${children.length}');
     return CustomMultiChildLayout(
-        delegate: _LayoutDelegate(model: model, offset: offset),
-        children: children);
+        delegate: _LayoutDelegate(controller: controller), children: children);
   }
 }
 
 class _LayoutDelegate extends MultiChildLayoutDelegate {
-  _LayoutDelegate({required this.model, required this.offset});
+  _LayoutDelegate({required this.controller});
 
-  final DiagramModel model;
-  final Offset offset;
+  final DiagramController controller;
 
   @override
   void performLayout(Size size) {
-    for (DiagramNode node in model.nodes) {
+    for (DiagramNode node in controller.nodes) {
+      ScaledBounds bounds = node.scaledBounds(controller.scale);
       layoutChild(
           node.key,
           BoxConstraints.tightFor(
-              width: node.bounds.width * model.scale,
-              height: node.bounds.height * model.scale));
+              width: bounds.width.toDouble(),
+              height: bounds.height.toDouble()));
       positionChild(
           node.key,
-          Offset((node.bounds.left * model.scale) + offset.dx,
-              (node.bounds.top * model.scale) + offset.dy));
+          Offset((bounds.left + controller.translation.x).toDouble(),
+              (bounds.top + controller.translation.y).toDouble()));
     }
   }
 

@@ -1,12 +1,15 @@
-import 'package:diagram/src/model.dart';
+import 'package:diagram/src/bounds.dart';
+import 'package:diagram/src/controller.dart';
+import 'package:diagram/src/notifier.dart';
+import 'package:diagram/src/translation.dart';
 import 'package:diagram/src/viewport_layout.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class DiagramViewport extends StatefulWidget {
-  const DiagramViewport({super.key, required this.model});
+  const DiagramViewport({super.key, required this.controller});
 
-  final DiagramModel model;
+  final DiagramController controller;
 
   @override
   State<StatefulWidget> createState() => _DiagramViewportState();
@@ -16,20 +19,25 @@ class _DiagramViewportState extends State<DiagramViewport> {
   bool _dragging = false;
   double _width = double.nan;
   double _height = double.nan;
-  Offset _modelOffset = Offset.zero;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: _builder);
+    Notifier notifier =
+        DiagramControllerHelper.viewportNotifier(widget.controller);
+    return ListenableBuilder(
+        listenable: notifier,
+        builder: (context, child) => LayoutBuilder(builder: _builder));
   }
 
   Widget _builder(BuildContext context, BoxConstraints constraints) {
     if (_width != constraints.maxWidth || _height != constraints.maxHeight) {
-      _modelOffset = _createValidOffset(
-          x: _modelOffset.dx,
-          y: _modelOffset.dy,
-          viewportWidth: constraints.maxWidth,
-          viewportHeight: constraints.maxHeight);
+      Translation translation = _createValidTranslation(
+          x: widget.controller.translation.x,
+          y: widget.controller.translation.y,
+          viewportWidth: constraints.maxWidth.toInt(),
+          viewportHeight: constraints.maxHeight.toInt());
+      DiagramControllerHelper.updateTranslation(
+          widget.controller, translation, false);
       _width = constraints.maxWidth;
       _height = constraints.maxHeight;
     }
@@ -48,8 +56,7 @@ class _DiagramViewportState extends State<DiagramViewport> {
         child: IgnorePointer(
             ignoring: _dragging,
             child: DiagramViewportLayout(
-                model: widget.model,
-                offset: _modelOffset,
+                controller: widget.controller,
                 width: _width,
                 height: _height)));
   }
@@ -72,41 +79,40 @@ class _DiagramViewportState extends State<DiagramViewport> {
 
   void _onDragUpdate(PointerMoveEvent event) {
     if (_dragging && event.buttons == kMiddleMouseButton) {
-      Offset newOffset = _createValidOffset(
-          x: _modelOffset.dx + event.delta.dx,
-          y: _modelOffset.dy + event.delta.dy,
-          viewportWidth: _width,
-          viewportHeight: _height);
-      if (_modelOffset != newOffset) {
-        setState(() {
-          _modelOffset = newOffset;
-        });
-      }
+      Translation translation = _createValidTranslation(
+          x: widget.controller.translation.x + event.delta.dx.toInt(),
+          y: widget.controller.translation.y + event.delta.dy.toInt(),
+          viewportWidth: _width.toInt(),
+          viewportHeight: _height.toInt());
+      DiagramControllerHelper.updateTranslation(
+          widget.controller, translation, true);
     }
   }
 
   void _onZoom(bool zoomIn) {
-    setState(() {
-      widget.model.scale = widget.model.scale * (zoomIn ? 1.05 : 0.95);
-    });
+    double scale = widget.controller.scale * (zoomIn ? 1.05 : 0.95);
+    DiagramControllerHelper.updateScale(widget.controller, scale);
   }
 
-  Offset _createValidOffset(
-      {required double x,
-      required double y,
-      required double viewportWidth,
-      required double viewportHeight}) {
-    if (widget.model.bounds.left + x > viewportWidth) {
+  Translation _createValidTranslation(
+      {required int x,
+      required int y,
+      required int viewportWidth,
+      required int viewportHeight}) {
+    ScaledBounds bounds = widget.controller.scaledBounds;
+    if (bounds.left + x > viewportWidth) {
+      // dragging to right
       x = viewportWidth;
-    } else if (widget.model.bounds.right + x < 0) {
-      x = -widget.model.bounds.width;
+    } else if (bounds.right + x < 0) {
+      // dragging to left
+      x = -bounds.width;
     }
 
-    if (widget.model.bounds.top + y > viewportHeight) {
+    if (bounds.top + y > viewportHeight) {
       y = viewportHeight;
-    } else if (widget.model.bounds.bottom + y < 0) {
-      y = -widget.model.bounds.height;
+    } else if (bounds.bottom + y < 0) {
+      y = -bounds.height;
     }
-    return Offset(x, y);
+    return Translation(x, y);
   }
 }

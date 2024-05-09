@@ -1,5 +1,5 @@
 import 'package:diagram/src/viewport.dart';
-import 'package:diagram/src/model.dart';
+import 'package:diagram/src/controller.dart';
 import 'package:flutter/material.dart';
 
 class Diagram extends StatefulWidget {
@@ -10,16 +10,16 @@ class Diagram extends StatefulWidget {
 }
 
 class _DiagramState extends State<Diagram> {
-  final DiagramModel _model = DiagramModel();
+  final DiagramController _controller = DiagramController();
 
   @override
   void initState() {
     super.initState();
-    DiagramModelFactory.addSquares(_model);
+    DiagramControllerFactory.addSquares(_controller);
   }
 
   @override
   Widget build(BuildContext context) {
-    return DiagramViewport(model: _model);
+    return DiagramViewport(controller: _controller);
   }
 }

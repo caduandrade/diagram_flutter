@@ -1,25 +1,37 @@
+import 'package:diagram/src/bounds.dart';
 import 'package:flutter/material.dart';
 
 abstract class DiagramNode {
   final Key key = UniqueKey();
 
-  Rect _bounds = Rect.zero;
-  Rect get bounds => _bounds;
+  Bounds _bounds = Bounds(left: 0, top: 0, width: 0, height: 0);
+  Bounds get bounds => _bounds;
 
-  void setLocation({required double x, required double y}) {
-    _bounds = Rect.fromLTWH(x, y, _bounds.width, _bounds.height);
+  ScaledBounds? _scaledBounds;
+
+  ScaledBounds scaledBounds(double scale) {
+    if (_scaledBounds == null || _scaledBounds!.scale != scale) {
+      _scaledBounds = ScaledBounds(scale: scale, bounds: bounds);
+    }
+    return _scaledBounds!;
   }
 
-  void setSize({required double width, required double height}) {
-    _bounds = Rect.fromLTWH(_bounds.left, _bounds.top, width, height);
+  void setLocation({required int x, required int y}) {
+    _bounds =
+        Bounds(left: x, top: y, width: _bounds.width, height: _bounds.height);
+  }
+
+  void setSize({required int width, required int height}) {
+    _bounds = Bounds(
+        left: _bounds.left, top: _bounds.top, width: width, height: height);
   }
 
   void setBounds(
-      {required double x,
-      required double y,
-      required double width,
-      required double height}) {
-    _bounds = Rect.fromLTWH(x, y, width, height);
+      {required int x,
+      required int y,
+      required int width,
+      required int height}) {
+    _bounds = Bounds(left: x, top: y, width: width, height: height);
   }
 
   Widget build(
