@@ -22,7 +22,7 @@ class Bounds {
   int get bottom => top + height;
 
   /// Returns a new rectangle which is the bounding box containing this
-  /// rectangle and the given rectangle.
+  /// bounds and the given bounds.
   Bounds expandToInclude(Bounds other) {
     int left = math.min(this.left, other.left);
     int top = math.min(this.top, other.top);
@@ -30,6 +30,17 @@ class Bounds {
     int bottom = math.max(this.bottom, other.bottom);
     return Bounds(
         left: left, top: top, width: right - left, height: bottom - top);
+  }
+
+  /// Whether `other` has a nonzero area of overlap with this bounds.
+  bool overlaps(Bounds other) {
+    if (right <= other.left || other.right <= left) {
+      return false;
+    }
+    if (bottom <= other.top || other.bottom <= top) {
+      return false;
+    }
+    return true;
   }
 
   @override

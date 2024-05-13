@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:diagram/src/bounds.dart';
@@ -11,7 +12,14 @@ import 'package:meta/meta.dart';
 class DiagramController {
   final Notifier _viewportNotifier = Notifier();
 
-  final Map<Key, DiagramNode> _nodes = {};
+  final List<DiagramNode> _nodes = [];
+  UnmodifiableListView<DiagramNode>? _unmodifiableNodes;
+  List<DiagramNode> get nodes {
+    _unmodifiableNodes ??= UnmodifiableListView(_nodes);
+    return _unmodifiableNodes!;
+  }
+
+  int get count => _nodes.length;
 
   Bounds? _bounds;
   Bounds get bounds {
@@ -20,7 +28,8 @@ class DiagramController {
       int top = 0;
       int right = 0;
       int bottom = 0;
-      for (final (index, node) in _nodes.values.indexed) {
+      for (int index = 0; index < _nodes.length; index++) {
+        DiagramNode node = _nodes[index];
         if (index == 0) {
           left = node.bounds.left;
           top = node.bounds.top;
@@ -69,23 +78,15 @@ class DiagramController {
     }
   }
 
-  Iterable<DiagramNode> get nodes => _nodes.values;
-
-  int get count => _nodes.length;
-
-  DiagramNode? get(Key key) {
-    return _nodes[key];
-  }
-
   void add(DiagramNode node) {
-    _nodes[node.key] = node;
+    _nodes.add(node);
     _bounds = bounds.expandToInclude(node.bounds);
     _scaledBounds = null;
   }
 
   void addAll(Iterable<DiagramNode> list) {
     for (DiagramNode node in list) {
-      _nodes[node.key] = node;
+      _nodes.add(node);
       _bounds = bounds.expandToInclude(node.bounds);
       _scaledBounds = null;
     }
@@ -96,7 +97,7 @@ class DiagramControllerFactory {
   static void addSquares(DiagramController controller) {
     List<DiagramNode> nodes = [];
     math.Random random = math.Random();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 2000; i++) {
       Color color = Color.fromARGB(
           255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
       SquareNode node = SquareNode(color: color);
