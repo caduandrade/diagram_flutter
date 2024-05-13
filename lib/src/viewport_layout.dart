@@ -1,4 +1,5 @@
 import 'package:diagram/src/bounds.dart';
+import 'package:diagram/src/debug_notifier.dart';
 import 'package:diagram/src/node.dart';
 import 'package:diagram/src/controller.dart';
 import 'package:diagram/src/translation.dart';
@@ -12,27 +13,30 @@ class DiagramViewportLayout extends StatelessWidget {
       {super.key,
       required this.controller,
       required this.width,
-      required this.height});
+      required this.height,
+      required this.debugNotifier});
 
   final DiagramController controller;
   final double width;
   final double height;
+  final DebugNotifier? debugNotifier;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
-    List<Widget> children2 = [];
-    List<DiagramNode> keys = [];
     Bounds viewportBounds = Bounds(
         left: -controller.translation.x,
         top: -controller.translation.y,
         width: width.toInt(),
         height: height.toInt());
+    int visibleCount = 0;
     for (DiagramNode node in controller.nodes) {
       ScaledBounds bounds = node.scaledBounds(controller.scale);
       bool visible = viewportBounds.overlaps(bounds);
-      keys.add(node);
-      children2.add(_LayoutChild(
+      if (visible) {
+        visibleCount++;
+      }
+      children.add(_LayoutChild(
           scaledBounds: bounds,
           visible: visible,
           child: node.build(
@@ -40,16 +44,11 @@ class DiagramViewportLayout extends StatelessWidget {
               scale: controller.scale,
               viewportWidth: width,
               viewportHeight: height)));
-      children.add(LayoutId(
-          key: node.key,
-          id: node.key,
-          child: node.build(
-              context: context,
-              scale: controller.scale,
-              viewportWidth: width,
-              viewportHeight: height)));
     }
-    return _Layout(translation: controller.translation, children: children2);
+    if (debugNotifier != null) {
+      Future.microtask(() => debugNotifier?.visibleNodes = visibleCount);
+    }
+    return _Layout(translation: controller.translation, children: children);
   }
 }
 

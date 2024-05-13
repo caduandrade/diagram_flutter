@@ -22,11 +22,43 @@ class DiagramApp extends StatelessWidget {
   }
 }
 
-class DiagramPage extends StatelessWidget {
+class DiagramPage extends StatefulWidget {
   const DiagramPage({super.key});
 
   @override
+  State<StatefulWidget> createState() => DiagramPageState();
+}
+
+class DiagramPageState extends State<DiagramPage> {
+  final DiagramController _controller = DiagramController();
+  final DebugNotifier _debugNotifier = DebugNotifier();
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Diagram());
+    return Scaffold(
+        body: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      DebugWidget(controller: _controller, debugNotifier: _debugNotifier),
+      Expanded(
+          child:
+              Diagram(controller: _controller, debugNotifier: _debugNotifier))
+    ]));
+  }
+}
+
+class DebugWidget extends StatelessWidget {
+  const DebugWidget(
+      {super.key, required this.controller, required this.debugNotifier});
+
+  final DiagramController controller;
+  final DebugNotifier debugNotifier;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+        listenable: debugNotifier,
+        builder: (context, child) =>
+            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Text('nodes: ${controller.count}'),
+              Text('visible nodes: ${debugNotifier.visibleNodes}')
+            ]));
   }
 }

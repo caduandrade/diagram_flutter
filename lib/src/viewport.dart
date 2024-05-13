@@ -1,15 +1,20 @@
 import 'package:diagram/src/bounds.dart';
 import 'package:diagram/src/controller.dart';
+import 'package:diagram/src/debug_notifier.dart';
 import 'package:diagram/src/notifier.dart';
 import 'package:diagram/src/translation.dart';
 import 'package:diagram/src/viewport_layout.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
+@internal
 class DiagramViewport extends StatefulWidget {
-  const DiagramViewport({super.key, required this.controller});
+  const DiagramViewport(
+      {super.key, required this.controller, required this.debugNotifier});
 
   final DiagramController controller;
+  final DebugNotifier? debugNotifier;
 
   @override
   State<StatefulWidget> createState() => _DiagramViewportState();
@@ -57,6 +62,7 @@ class _DiagramViewportState extends State<DiagramViewport> {
             ignoring: _dragging,
             child: DiagramViewportLayout(
                 controller: widget.controller,
+                debugNotifier: widget.debugNotifier,
                 width: _width,
                 height: _height)));
   }
