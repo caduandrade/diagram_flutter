@@ -3,8 +3,9 @@ import 'dart:math' as math;
 
 import 'package:diagram/src/bounds.dart';
 import 'package:diagram/src/node.dart';
+import 'package:diagram/src/nodes/tank_node.dart';
 import 'package:diagram/src/notifier.dart';
-import 'package:diagram/src/square_node.dart';
+import 'package:diagram/src/nodes/square_node.dart';
 import 'package:diagram/src/translation.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
@@ -97,16 +98,24 @@ class DiagramControllerFactory {
   static void addSquares(DiagramController controller) {
     List<DiagramNode> nodes = [];
     math.Random random = math.Random();
-    for (int i = 0; i < 2000; i++) {
+    for (int i = 0; i < 5; i++) {
       Color color = Color.fromARGB(
           255, random.nextInt(255), random.nextInt(255), random.nextInt(255));
-      SquareNode node = SquareNode(color: color);
-      node.setBounds(
+      SquareNode squareNode = SquareNode(color: color);
+      squareNode.setBounds(
           x: random.nextInt(450),
           y: random.nextInt(450),
           width: 50,
           height: 50);
-      nodes.add(node);
+      nodes.add(squareNode);
+
+      TankNode tankNode = TankNode();
+      tankNode.setBounds(
+          x: random.nextInt(450),
+          y: random.nextInt(450),
+          width: 50,
+          height: 50);
+      nodes.add(tankNode);
     }
     controller.addAll(nodes);
   }
